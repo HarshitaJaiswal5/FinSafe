@@ -65,12 +65,12 @@ const transaction = async (req, res) => {
                 transaction_type,
                 transaction_description,
             });
-            
+
 
         }
         const balance = await db.select('balance').from('note_denominations').where('account_no', '=', account_no);
         const actBalance = (balance[0].balance);
-        
+
 
         const t_id = await db.select('transaction_id').from('transaction_details').where('account_no', '=', account_no);
         console.log(t_id)
@@ -104,17 +104,9 @@ const transaction = async (req, res) => {
             }
         } else {
             const cur_balance = await db.select('current_balance').from('current_balance_details').where('account_no', '=', account_no);
-                const act_cur_balance = (cur_balance[0].current_balance);
-                console.log(`act_cur_balance`);
+            const act_cur_balance = (cur_balance[0].current_balance);
+            console.log(`act_cur_balance`);
             if (transaction_type == 'debit') {
-                // access current balance from current balance table
-
-                // const balance = await db.select('balance').from('note_denominations').where('account_no', '=', account_no);
-                // const actBalance = (balance[0].balance);
-
-                
-
-
                 const result = act_cur_balance - amount;
                 console.log(result);
                 await db('current_balance_details')
@@ -122,7 +114,6 @@ const transaction = async (req, res) => {
                         current_balance: result,
                     })
                     .where('account_no', '=', account_no)
-
             } else if (transaction_type == 'credit') {
 
                 const result = act_cur_balance + amount;
