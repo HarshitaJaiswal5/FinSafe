@@ -1,4 +1,4 @@
-Welcome to FinSafe! This project is a comprehensive banking solution built with Node.js, Express, Knex, MySQL, and JavaScript. It offers a secure and efficient way to manage banking operations, from user registration to transaction history.
+Welcome to FinSafe! This backend-based project is a comprehensive banking solution built with Node.js, Express, Knex, MySQL, and JavaScript. It offers a secure and efficient way to manage banking operations, from user registration to transaction history.
 
 #Features:
 1)User Authentication: Utilizes Argon2 for password hashing and JWT for token verification, ensuring secure user authentication.
