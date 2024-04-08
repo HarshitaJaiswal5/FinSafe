@@ -29,24 +29,21 @@ const registerUser = async (req, res) => {
 }
 const branch = async (req, res) => {
     try {
-        const { Branch_name, Branch_code, Branch_Adress } = req.body;
-        const result = await validateFields_branch(req.body);
-        console.log('result' + result);
+        const { Branch_name,Branch_Adress } = req.body;
+        // const result = await validateFields_branch(req.body);
+        // console.log('result' + result);
 
         let branchCode = generateRandomString()
         console.log(branchCode)
 
-        if (!result) {
-            res.status(400).send("Only valid fields to add: 'branch_id' , 'branch_name' and 'address' ")
-        } else {
-            await db('branch_details').insert({
-                Branch_name,
-                Branch_code: branchCode,
-                Branch_Adress
-            });
-            res.status(201).send("Branch registered successfully!");
+        await db('Branch').insert({
+         Branch_name,
+         Branch_code: branchCode,
+         Branch_Adress
+    });
+        res.status(201).send("Branch registered successfully!");
 
-        }
+        
     }
 
 
