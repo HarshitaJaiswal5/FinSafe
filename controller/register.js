@@ -1,43 +1,48 @@
 const knex = require('knex');
-const db = require('../db/db');
-// const bcrypt = require('bcryptjs');
+const db = require('../db/db.js');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
+const { generateRandomString } = require('../utils/generateRandomString.js')
 const { validateFields_branch, validateFields_user, validateFields_trans, validateFields_notes } = require('../utils/validateFields');
 
 const registerUser = async (req, res) => {
+
     try {
-        const { full_name, email, password } = req.body;
+        const { Fullname, Email, DOB, Permanent_Address } = req.body;
         const areValidFields = await validateFields_user(req.body);
         console.log(areValidFields);
         if (!areValidFields) {
-            res.status(400).send("Only valid fields to add: 'full_name' , 'email' and 'password'")
+            res.status(400).send(" Only valid fields to add: 'Fullname','Email','DOB','Permanent_Address' ")
         } else {
-            const hashedPassword = await argon2.hash(password, { type: argon2.argon2id });
-            await db('account_holder_details').insert({
-                full_name,
-                email,
-                password: hashedPassword,
+            const hashedPassword = await argon2.hash(DOB, { type: argon2.argon2id });
+            await db('Users_1').insert({
+                Fullname,
+                Email,
+                DOB,
+                Permanent_Address
             });
             res.status(201).send("User registered successfully!");
         }
-
     } catch (error) {
         console.log(error);
     }
-};
+}
 const branch = async (req, res) => {
     try {
-        const { branch_id, branch_name, address } = req.body;
+        const { Branch_name, Branch_code, Branch_Adress } = req.body;
         const result = await validateFields_branch(req.body);
         console.log('result' + result);
+
+        let branchCode = generateRandomString()
+        console.log(branchCode)
+
         if (!result) {
             res.status(400).send("Only valid fields to add: 'branch_id' , 'branch_name' and 'address' ")
         } else {
             await db('branch_details').insert({
-                branch_id,
-                branch_name,
-                address
+                Branch_name,
+                Branch_code: branchCode,
+                Branch_Adress
             });
             res.status(201).send("Branch registered successfully!");
 

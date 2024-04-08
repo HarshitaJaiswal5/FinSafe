@@ -12,7 +12,7 @@
     "seed:create": "npx knex seed:make",
     "seed:run": "npx knex seed:run",
     "migrations": " npx knex migrate:latest --knexfile knexfile.js",
-    "for_init": "npx knex migrate:make init --migrations-directory db/migrations"
+    "for_init": "npx knex migrate:make init --migrations-directory migrations"
   },
   "keywords": [],
   "author": "",

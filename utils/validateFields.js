@@ -13,7 +13,7 @@ const validateFields_branch = async (body) => {
 }
 
 const validateFields_user = async (body) => {
-    const reqFields = ["full_name","email","password"]
+    const reqFields = ["Fullname","Email","DOB","Permanent_Address"]
     const recFields = Object.keys(body);
     console.log(recFields); console.log(reqFields);
     const areValidFields = reqFields.every((field) => {
