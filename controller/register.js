@@ -2,7 +2,7 @@ const knex = require('knex');
 const db = require('../db/db.js');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
-const { generateRandomString } = require('../utils/generateRandomString.js')
+const { generateRandomString,generateRandomString8, generateRandomCharacters } = require('../utils/generateRandomString.js')
 const { validateFields_branch, validateFields_user, validateFields_trans, validateFields_notes } = require('../utils/validateFields');
 
 const registerUser = async (req, res) => {
@@ -18,7 +18,7 @@ const registerUser = async (req, res) => {
             await db('Users_1').insert({
                 Fullname,
                 Email,
-                DOB,
+                DOB:hashedPassword,
                 Permanent_Address
             });
             res.status(201).send("User registered successfully!");
@@ -51,7 +51,29 @@ const branch = async (req, res) => {
         console.log(error);
     }
 }
-    ;
+    
+const registerAccountHolder = async(req,res) =>{
+    const{ Fullname,Permanent_Address,Aadhar_Number,Branch_Name } = req.body
+    
+
+    const accountNumber = generateRandomString8()
+    const password = generateRandomCharacters()
+    const hashedPassword = await argon2.hash(password, { type: argon2.argon2id });
+
+    await db('Register-Account-Holder_1').insert({
+        Fullname,
+        Permanent_Address,
+        Aadhar_Number,
+        Branch_Name,
+        Accouunt_Number:accountNumber,
+        Net_Banking_Password:hashedPassword
+
+    })
+
+}
+
+
+
 const transaction = async (req, res) => {
     try {
         const { account_no, transaction_id, amount, transaction_type, transaction_description } = req.body;
