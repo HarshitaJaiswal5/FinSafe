@@ -18,7 +18,7 @@ const registerUser = async (req, res) => {
             await db('Users_1').insert({
                 Fullname,
                 Email,
-                DOB:hashedPassword,
+                DOB,
                 Permanent_Address
             });
             res.status(201).send("User registered successfully!");
@@ -97,11 +97,11 @@ async function sendMail(){
             }
         })
         
-    const mailOptions ={
+        const mailOptions ={
             from:'eklavyasinghparihar7875@gmail.com',
             to: Email,
             subject: 'Thanks For Registering With FinSafe',
-            text: `Hello ${Fullname} thank you for registering with FinSafe.Here's your Account Number ${accountNumber} along with auto-generated password ${password}.`
+            text:` Hello ${Fullname} thank you for registering with FinSafe.Here's your Account Number ${accountNumber} along with auto-generated password ${password}.`
         }
         
         try {
@@ -111,41 +111,56 @@ async function sendMail(){
             console.log('error',error)   
         }}
         sendMail()
-if(sendMail){
-    res.json("Confirmation has been sent to your registered email")
+       } } catch(error){
+            res.json('error while booking show please try again')
+        }
 }
-    }
-} catch(error){
-    console.error(error)
-}    
-}
-
-
-
-
-
-
-
 
 
 const transaction = async (req, res) => {
     try {
-        const { account_no, transaction_id, amount, transaction_type, transaction_description } = req.body;
+        const { Account_no,Transaction_type , Amount} = req.body;
         const result = await validateFields_trans(req.body);
 
         if (!result) {
             return res.status(400).send("Only valid fields to add: 'account_no', 'transaction_id', 'amount', 'transaction_type', 'transaction_description'")
         } else {
-            await db('transaction_details').insert({
-                account_no,
-                transaction_id,
-                amount,
-                transaction_type,
-                transaction_description,
-            });
+            
 
 
-        }
+
+if(Transaction_type === "debit"){
+const transactionSuccess = await db.transaction(async (trx)=>{
+await trx('Account_balance')
+    .where({ Account_no })
+    .decrement('Total_balance',Amount)
+await db('transaction_details').insert({
+    Account_no,
+    Transaction_type , 
+    Amount,
+    created_at: new Date()
+});
+ })
+}
+
+
+if(Transaction_type === "credit"){
+const transactionSuccess = await db.transaction(async (trx)=>{
+await trx('Account_balance')
+    .where({ Account_no })
+    .increment('Total_balance',Amount)
+await db('transaction_details').insert({
+    Account_no,
+    Transaction_type , 
+    Amount,
+    created_at: new Date()
+});
+ })
+}
+
+}
+
+
         const balance = await db.select('balance').from('note_denominations').where('account_no', '=', account_no);
         const actBalance = (balance[0].balance);
 
