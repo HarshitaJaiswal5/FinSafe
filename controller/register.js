@@ -53,11 +53,12 @@ const branch = async (req, res) => {
 }
     
 const registerAccountHolder = async(req,res) =>{
-    const{ Fullname,Permanent_Address,Aadhar_Number,Branch_Name } = req.body
+    try{
+    const{ Fullname,Permanent_Address,Aadhar_Number,Branch_Name,Email } = req.body
     
 
     const accountNumber = generateRandomString8()
-    const password = generateRandomCharacters()
+    const password = generateRandomCharacters(8)
     const hashedPassword = await argon2.hash(password, { type: argon2.argon2id });
 
     await db('Register-Account-Holder_1').insert({
@@ -71,6 +72,48 @@ const registerAccountHolder = async(req,res) =>{
     })
 
 }
+async function sendMail(){
+    const transporter  =nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'eklavyasinghparihar7875@gmail.com',
+            pass: 'qnsqoemikkgsyutn'
+        }
+    })
+    
+    async function sendMail(){
+        const transporter  =nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'eklavyasinghparihar7875@gmail.com',
+                pass: 'qnsqoemikkgsyutn'
+            }
+        })
+        
+    const mailOptions ={
+            from:'eklavyasinghparihar7875@gmail.com',
+            to: Email,
+            subject: 'Thanks For Registering With FinSafe',
+            text: `Hello ${Fullname} thank you for registering with FinSafe.Here's your Account Number ${accountNumber} along with auto-generated password ${password}.`
+        }
+        
+        try {
+            const result = await transporter.sendMail(mailOptions)
+            console.log('email sent successfully');
+        } catch (error) {
+            console.log('error',error)   
+        }}
+        sendMail()
+    }
+} catch(error){
+    console.error(error)
+}    
+
+
+
+
+
+
 
 
 
