@@ -71,7 +71,7 @@ const registerAccountHolder = async(req,res) =>{
 
     })
 
-}
+
 async function sendMail(){
     const transporter  =nodemailer.createTransport({
         service: 'gmail',
