@@ -60,16 +60,23 @@ const registerAccountHolder = async(req,res) =>{
     const accountNumber = generateRandomString8()
     const password = generateRandomCharacters(8)
     const hashedPassword = await argon2.hash(password, { type: argon2.argon2id });
+    console.log(password);
 
-    await db('Register-Account-Holder_1').insert({
+    let insertion = await db('Register-Account-Holder_2').insert({
         Fullname,
         Permanent_Address,
         Aadhar_Number,
         Branch_Name,
-        Accouunt_Number:accountNumber,
+        Account_Number:accountNumber,
         Net_Banking_Password:hashedPassword
-
     })
+    if (insertion){
+        res.json("Account holder created successfully")
+    } else(error) =>{
+        console.log(error)
+        res.json("Some error occurred while creating account holder")
+    }
+
 
 
 async function sendMail(){
@@ -104,10 +111,14 @@ async function sendMail(){
             console.log('error',error)   
         }}
         sendMail()
+if(sendMail){
+    res.json("Confirmation has been sent to your registered email")
+}
     }
 } catch(error){
     console.error(error)
 }    
+}
 
 
 
@@ -228,6 +239,7 @@ const denoms = async (req, res) => {
 module.exports = {
     registerUser,
     branch,
+    registerAccountHolder,
     transaction,
     denoms
 };
