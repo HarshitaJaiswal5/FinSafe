@@ -121,18 +121,12 @@ const transaction = async (req, res) => {
     try {
         const { Account_Number,Transaction_type,Amount} = req.body;
 
-
-
-
-
-
-if(Transaction_type === "debit"){
-
+        if(Transaction_type === "debit"){
 const transactionSuccess = await db.transaction(async (trx)=>{
 await trx('Account_Balance')
     .where({ Account_Number })
     .decrement('Total_Balance',Amount)
-await db('Transaction_detailss').insert({
+await db('Transaction_details').insert({
     Account_no:Account_Number,
     Transaction_type , 
     Amount,
@@ -141,9 +135,7 @@ await db('Transaction_detailss').insert({
  })
 }
 
-
 if(Transaction_type === "credit"){
-
 const transactionSuccess = await db.transaction(async (trx)=>{
 await trx('Account_Balance')
     .where({ Account_Number })
@@ -157,40 +149,16 @@ await db('Transaction_details').insert({
  })
 }
 
-
 res.status(201).send("Transaction registered successfully!");
  } catch (error) {
 console.log(error);
     }
 }
-const denoms = async (req, res) => {
-    try {
-        const { account_no, notes_1000rs, notes_2000rs } = req.body;
-        const result = await validateFields_notes(req.body);
-        console.log(result);
-        if (!result) {
-            return res.status(400).send("Only valid fields to add: 'account_no', 'notes_1000rs', 'notes_2000rs' ")
 
-        } else {
-            const balance = ((1000 * notes_1000rs) + (2000 * notes_2000rs));
-
-            await db('note_denominations').insert({
-                account_no,
-                notes_1000rs,
-                notes_2000rs,
-                balance
-            });
-            res.status(201).send("Denominations registered successfully!");
-        }
-    } catch (error) {
-        console.log(error);
-    }
-};
 
 module.exports = {
     registerUser,
     branch,
     registerAccountHolder,
     transaction,
-    denoms
 };

@@ -1,5 +1,5 @@
 const express = require ('express');
-const {registerUser, branch, registerAccountHolder ,transaction , denoms} = require('../controller/register');
+const {registerUser, branch, registerAccountHolder ,transaction} = require('../controller/register');
 const {updateUser} =require('../controller/update');
 const {displayUser, displayBranch, branchUsers, login, logout} =require('../controller/display');
 
@@ -12,7 +12,7 @@ router.post('/account',registerUser);
 router.post('/branch',branch);
 router.post('/register-account-holder',registerAccountHolder)
 router.post('/transaction', transaction);
-router.post('/denominations', denoms);
+
 
 
 
