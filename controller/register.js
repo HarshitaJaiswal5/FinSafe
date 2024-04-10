@@ -119,8 +119,8 @@ async function sendMail(){
 
 const transaction = async (req, res) => {
     try {
-        const { Account_Number,Transaction_type,Amount} = req.body;
-
+        const { Account_Number, Account_holder_name, Card_Type, transaction_done_by ,Transaction_type, Amount} = req.body;
+        
         if(Transaction_type === "debit"){
 const transactionSuccess = await db.transaction(async (trx)=>{
 await trx('Account_Balance')
@@ -142,11 +142,40 @@ await trx('Account_Balance')
     .increment('Total_Balance',Amount)
 await db('Transaction_details').insert({
     Account_no:Account_Number,
-    Transaction_type , 
+    Account_holder_name,
+    Transaction_type ,
+    transaction_done_by, 
     Amount,
     created_at: new Date()
 });
- })
+})
+}
+
+if(transaction_done_by === "debit_card"){
+    const transactionSuccess = await db.transaction(async (trx)=>{
+    await trx('Account_Balance')
+    .where({ Account_Number })
+    .decrement('Total_Balance',Amount)
+    await trx('Transaction_details_1').insert({
+        Account_no:Account_Number,
+        Account_holder_name,
+        Transaction_type , 
+        Amount,
+        created_at: new Date()
+    })
+    await trx('Cards').insert({
+        Account_Number,
+        Account_holder_name,
+        Card_Type,
+        Transaction:Amount,
+        transaction_type:Transaction_type,
+        created_at: new Date()
+
+    })
+
+
+})
+
 }
 
 res.status(201).send("Transaction registered successfully!");
@@ -154,6 +183,8 @@ res.status(201).send("Transaction registered successfully!");
 console.log(error);
     }
 }
+
+
 
 
 module.exports = {
