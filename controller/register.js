@@ -2,6 +2,7 @@ const knex = require('knex');
 const db = require('../db/db.js');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer')
 const { generateRandomString,generateRandomString8, generateRandomCharacters } = require('../utils/generateRandomString.js')
 const { validateFields_branch, validateFields_user, validateFields_trans, validateFields_notes } = require('../utils/validateFields');
 
@@ -41,22 +42,16 @@ const branch = async (req, res) => {
          Branch_code: branchCode,
          Branch_Adress
     });
-        res.status(201).send("Branch registered successfully!");
-
-        
-    }
-
-
-    catch (error) {
+        res.status(201).send("Branch registered successfully!");        
+ }catch (error) {
         console.log(error);
     }
 }
     
 const registerAccountHolder = async(req,res) =>{
     try{
-    const{ Fullname,Permanent_Address,Aadhar_Number,Branch_Name,Email } = req.body
+    const{ Fullname,Permanent_Address,Aadhar_Number,Branch_Name,Email} = req.body
     
-
     const accountNumber = generateRandomString8()
     const password = generateRandomCharacters(8)
     const hashedPassword = await argon2.hash(password, { type: argon2.argon2id });
@@ -70,23 +65,6 @@ const registerAccountHolder = async(req,res) =>{
         Account_Number:accountNumber,
         Net_Banking_Password:hashedPassword
     })
-    if (insertion){
-        res.json("Account holder created successfully")
-    } else(error) =>{
-        console.log(error)
-        res.json("Some error occurred while creating account holder")
-    }
-
-
-
-async function sendMail(){
-    const transporter  =nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'eklavyasinghparihar7875@gmail.com',
-            pass: 'qnsqoemikkgsyutn'
-        }
-    })
     
     async function sendMail(){
         const transporter  =nodemailer.createTransport({
@@ -96,51 +74,58 @@ async function sendMail(){
                 pass: 'qnsqoemikkgsyutn'
             }
         })
-        
-        const mailOptions ={
-            from:'eklavyasinghparihar7875@gmail.com',
-            to: Email,
-            subject: 'Thanks For Registering With FinSafe',
-            text:` Hello ${Fullname} thank you for registering with FinSafe.Here's your Account Number ${accountNumber} along with auto-generated password ${password}.`
-        }
-        
+        const mailOptions = {
+            from: 'eklavyasinghpariharr7875@gmail.com',
+            to:Email,
+            subject: 'Password Reset Request',
+            text: `Hello ${Fullname},thank you for registering with FinSafe.Here's your Account Number:${accountNumber} with auto-genarted password:${password}.Don't Delay Just FinSafe`,
+          }
         try {
             const result = await transporter.sendMail(mailOptions)
             console.log('email sent successfully');
         } catch (error) {
-            console.log('error',error)   
+            console.log('error',error)  
         }}
         sendMail()
-       } } catch(error){
-            res.json('error while booking show please try again')
-        }
+
+if(sendMail){
+    res.json('Your account number has been sent to your email')
 }
 
 
+            
+        
+ }catch(error){
+        console.log(error);
+            res.json('error while booking show please try again')
+    }       
+
+}
+
 const transaction = async (req, res) => {
     try {
-        const { Account_Number, Account_holder_name, Card_Type, transaction_done_by ,Transaction_type, Amount} = req.body;
+        const { Account_Number, Account_holder_name, transaction_done_by, Card_Type,Transaction_type, Amount} = req.body;
         
-        if(Transaction_type === "debit"){
+if(Transaction_type === "debit"){
 const transactionSuccess = await db.transaction(async (trx)=>{
 await trx('Account_Balance')
     .where({ Account_Number })
     .decrement('Total_Balance',Amount)
-await db('Transaction_details').insert({
+await trx('Transaction_details_1').insert({
     Account_no:Account_Number,
-    Transaction_type , 
+    Account_holder_name,
+    Transaction_type ,
+    transaction_done_by, 
     Amount,
     created_at: new Date()
-});
  })
-}
-
+})
 if(Transaction_type === "credit"){
 const transactionSuccess = await db.transaction(async (trx)=>{
 await trx('Account_Balance')
     .where({ Account_Number })
     .increment('Total_Balance',Amount)
-await db('Transaction_details').insert({
+await trx('Transaction_details_1').insert({
     Account_no:Account_Number,
     Account_holder_name,
     Transaction_type ,
@@ -150,34 +135,7 @@ await db('Transaction_details').insert({
 });
 })
 }
-
-if(transaction_done_by === "debit_card"){
-    const transactionSuccess = await db.transaction(async (trx)=>{
-    await trx('Account_Balance')
-    .where({ Account_Number })
-    .decrement('Total_Balance',Amount)
-    await trx('Transaction_details_1').insert({
-        Account_no:Account_Number,
-        Account_holder_name,
-        Transaction_type , 
-        Amount,
-        created_at: new Date()
-    })
-    await trx('Cards').insert({
-        Account_Number,
-        Account_holder_name,
-        Card_Type,
-        Transaction:Amount,
-        transaction_type:Transaction_type,
-        created_at: new Date()
-
-    })
-
-
-})
-
 }
-
 res.status(201).send("Transaction registered successfully!");
  } catch (error) {
 console.log(error);
