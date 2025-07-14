@@ -9,9 +9,11 @@ const display_all_bank = async (req, res) => {
         const res_ist = await format_to_ist(banks);
         res.status(200).send(res_ist);
     } catch (error) {
-        console.log(res);
+        console.error('Error in display_all_bank:', error); 
+        res.status(500).json({ error: 'Internal Server Error' }); 
     }
 }
+
 
 const display_bank_details = async (req, res) => {
     try {
@@ -97,7 +99,7 @@ const fetchBankBranches = async (req, res) => {
 const display_customer = async (req, res) => {
     try {
         let { branch_id } = req.params;
-        active_branch_id = active_branch_id || branch_id;
+        const active_branch_id = branch_id;
         if (!branch_id) {
             return res.status(400).send({
                 message: "Branch ID is required"
@@ -109,64 +111,60 @@ const display_customer = async (req, res) => {
             .where('person.branch_id', branch_id);
         const sanitizedResult = result.map(({ password, ...rest }) => rest);
         const res_ist = format_to_ist(sanitizedResult);
-        if(res_ist.length>0){
-            if (req.params.active_branch_id) {
-                return res.status(200).send({
-                    message: `The employees of branch ID: ${active_branch_id} fetched successfully!`,
-                    data: res_ist,
-                });
-            } else {
-                return res_ist; 
-            }     
+        if (res_ist.length > 0) {
+            return res.status(200).send({
+                message: `The employees of branch ID: ${active_branch_id} fetched successfully!`,
+                data: res_ist,
+            });
         } else {
-            res.status(200).send({
+            return res.status(200).send({
                 message: `No employee in the branch ID:${active_branch_id} `
-            })
+            });
         }
     } catch (error) {
         console.log("Error fetching bank details:", error);
         res.status(500).send({
             message: "An error occurred while fetching customer details"
-        })
+        });
     }
-}
-const display_employee = async (req, res, branch_id) => {
-    try {
-        let { active_branch_id } = req.params;
-        active_branch_id = active_branch_id || branch_id;
-        if (!active_branch_id) {
-            return res.status(400).send({
-                message: "Branch ID is required"
-            });
-        }
-        const result = await db('person')
-            .join('employee', 'person.person_id', 'employee.person_id')
-            .select('*')
-            .where('person.branch_id', active_branch_id);
-        const sanitizedResult = result.map(({ password, ...rest }) => rest);
+};
 
-        const res_ist = format_to_ist(sanitizedResult);
-        if(res_ist.length>0){
-            if (req.params.active_branch_id) {
-                return res.status(200).send({
-                    message: `The employees of branch ID: ${active_branch_id} fetched successfully!`,
-                    data: res_ist,
-                });
-            } else {
-                return res_ist; 
-            }     
-        } else {
-            res.status(200).send({
-                message: `No employee in the branch ID:${active_branch_id} `
-            })
-        }
-    } catch (error) {
-        console.log("Error fetching bank details:", error);
-        res.status(500).send({
-            message: "An error occurred while fetching employee details"
-        })
+const display_employee = async (req, res) => {
+    try {
+    const { branch_id } = req.params;
+
+    if (!branch_id || (typeof branch_id !== 'string' && typeof branch_id !== 'number')) {
+      return res.status(400).json({ message: "Branch ID is required and must be a string or number" });
     }
+
+    const result = await db('person')
+      .join('employee', 'person.person_id', 'employee.person_id')
+      .select('person.*', 'employee.*')
+      .where('person.branch_id', branch_id);
+
+    const sanitizedResult = result.map(({ password, ...rest }) => rest);
+
+    const formattedResult = format_to_ist(sanitizedResult);
+
+    if (formattedResult.length > 0) {
+      return res.status(200).json({
+        message: `Employees of branch ID: ${branch_id} fetched successfully!`,
+        data: formattedResult,
+      });
+    } else {
+      return res.status(200).json({
+        message: `No employees found for branch ID: ${branch_id}`,
+        data: [],
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching employee details:", error);
+    return res.status(500).json({
+      message: "An error occurred while fetching employee details",
+    });
+  
 }
+};
 
 
 module.exports = {

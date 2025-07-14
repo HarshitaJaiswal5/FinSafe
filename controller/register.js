@@ -20,6 +20,7 @@ const reg_bank = async (req, res) => {
 const reg_branch = async (req, res) => {
     try {
         const { bank_id, branch_name, branch_address } = req.body;
+        
         const bankExists = await db('bank_details')
             .select('bank_id')
             .where('bank_id', bank_id)
@@ -68,14 +69,13 @@ const reg_person_and_roles = async (req, res) => {
                 DOB,
                 phoneNo,
                 address,
-                role,
                 password: hashedPassword
             });
 
             // 2. Register the employee if the role is 'employee_only' or 'customer_employee'
             if (role === 'employee_only' || role === 'customer_employee') {
                 await trx('employee').insert({
-                    person_id, // Use the returned person_id
+                    person_id,
                     DOJ,
                     department,
                     salary,

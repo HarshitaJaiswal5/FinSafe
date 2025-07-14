@@ -9,6 +9,7 @@ router.get('/bank/:bank_id', display_bank_details);
 router.get('/branch', display_all_branches);
 router.get('/branch/details/:branch_id',display_branch_details);
 router.get('/branch/bank/:bank_id',fetchBankBranches);
+
 router.get('/customer/:branch_id',display_customer);
 router.get('/employee/:branch_id', display_employee);
 
